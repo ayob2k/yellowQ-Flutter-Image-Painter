@@ -68,10 +68,15 @@ class DrawImage extends CustomPainter {
               final _path = Path()
                 ..moveTo(_offset[i]!.dx, _offset[i]!.dy)
                 ..lineTo(_offset[i + 1]!.dx, _offset[i + 1]!.dy);
-              canvas.drawPath(_path, _painter..strokeCap = StrokeCap.round);
+
+              if (i == 0 || i == _offset.length - 2) {
+                canvas.drawPath(_path, _painter..strokeCap = StrokeCap.square);
+              } else {
+                canvas.drawPath(_path, _painter..strokeCap = StrokeCap.round);
+              }
             } else if (_offset[i] != null && _offset[i + 1] == null) {
               canvas.drawPoints(PointMode.points, [_offset[i]!],
-                  _painter..strokeCap = StrokeCap.round);
+                  _painter..strokeCap = StrokeCap.square);
             }
           }
           break;
@@ -132,10 +137,14 @@ class DrawImage extends CustomPainter {
           final points = _controller.offsets;
           for (int i = 0; i < _controller.offsets.length - 1; i++) {
             if (points[i] != null && points[i + 1] != null) {
-              canvas.drawLine(
-                  Offset(points[i]!.dx, points[i]!.dy),
-                  Offset(points[i + 1]!.dx, points[i + 1]!.dy),
-                  _paint..strokeCap = StrokeCap.round);
+              // Set square cap for first and last line segments
+              if (i == 0 || i == _controller.offsets.length - 2) {
+                _paint.strokeCap = StrokeCap.square;
+              } else {
+                _paint.strokeCap = StrokeCap.round;
+              }
+              canvas.drawLine(Offset(points[i]!.dx, points[i]!.dy),
+                  Offset(points[i + 1]!.dx, points[i + 1]!.dy), _paint);
             } else if (points[i] != null && points[i + 1] == null) {
               canvas.drawPoints(PointMode.points,
                   [Offset(points[i]!.dx, points[i]!.dy)], _paint);
