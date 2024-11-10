@@ -436,7 +436,7 @@ class ImagePainterState extends State<ImagePainter> {
 
   @override
   void dispose() {
-    _controller.dispose();
+    // _controller.dispose();
     _isLoaded.dispose();
     _textController.dispose();
     _transformationController.dispose();
