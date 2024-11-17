@@ -63,21 +63,15 @@ class DrawImage extends CustomPainter {
           canvas.drawPath(_dashPath(path, _painter.strokeWidth), _painter);
           break;
         case PaintMode.freeStyle:
-          for (int i = 0; i < _offset.length - 1; i++) {
-            if (_offset[i] != null && _offset[i + 1] != null) {
-              final _path = Path()
-                ..moveTo(_offset[i]!.dx, _offset[i]!.dy)
-                ..lineTo(_offset[i + 1]!.dx, _offset[i + 1]!.dy);
-
-              if (i == 0 || i == _offset.length - 2) {
-                canvas.drawPath(_path, _painter..strokeCap = StrokeCap.square);
-              } else {
-                canvas.drawPath(_path, _painter..strokeCap = StrokeCap.round);
+          if (_offset.length > 1) {
+            final path = Path();
+            path.moveTo(_offset[0]!.dx, _offset[0]!.dy);
+            for (int i = 1; i < _offset.length; i++) {
+              if (_offset[i] != null) {
+                path.lineTo(_offset[i]!.dx, _offset[i]!.dy);
               }
-            } else if (_offset[i] != null && _offset[i + 1] == null) {
-              canvas.drawPoints(PointMode.points, [_offset[i]!],
-                  _painter..strokeCap = StrokeCap.square);
             }
+            canvas.drawPath(path, _painter..strokeCap = StrokeCap.round);
           }
           break;
         case PaintMode.text:
@@ -135,20 +129,15 @@ class DrawImage extends CustomPainter {
           break;
         case PaintMode.freeStyle:
           final points = _controller.offsets;
-          for (int i = 0; i < _controller.offsets.length - 1; i++) {
-            if (points[i] != null && points[i + 1] != null) {
-              // Set square cap for first and last line segments
-              if (i == 0 || i == _controller.offsets.length - 2) {
-                _paint.strokeCap = StrokeCap.square;
-              } else {
-                _paint.strokeCap = StrokeCap.round;
+          if (points.length > 1) {
+            final path = Path();
+            path.moveTo(points[0]!.dx, points[0]!.dy);
+            for (int i = 1; i < points.length; i++) {
+              if (points[i] != null) {
+                path.lineTo(points[i]!.dx, points[i]!.dy);
               }
-              canvas.drawLine(Offset(points[i]!.dx, points[i]!.dy),
-                  Offset(points[i + 1]!.dx, points[i + 1]!.dy), _paint);
-            } else if (points[i] != null && points[i + 1] == null) {
-              canvas.drawPoints(PointMode.points,
-                  [Offset(points[i]!.dx, points[i]!.dy)], _paint);
             }
+            canvas.drawPath(path, _paint..strokeCap = StrokeCap.round);
           }
           break;
         default:
@@ -275,4 +264,30 @@ class PaintInfo {
     this.text = '',
     this.fill = false,
   });
+
+  factory PaintInfo.fromJson(Map<String, dynamic> json) {
+    return PaintInfo(
+      mode: PaintMode.values[json['mode']],
+      offsets: (json['offsets'] as List)
+          .map((e) => e == null ? null : Offset(e['dx'], e['dy']))
+          .toList(),
+      color: Color(json['color']),
+      strokeWidth: json['strokeWidth'],
+      text: json['text'] ?? '',
+      fill: json['fill'] ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'mode': mode.index,
+      'offsets': offsets
+          .map((e) => e == null ? null : {'dx': e.dx, 'dy': e.dy})
+          .toList(),
+      'color': color.value,
+      'strokeWidth': strokeWidth,
+      'text': text,
+      'fill': fill,
+    };
+  }
 }
